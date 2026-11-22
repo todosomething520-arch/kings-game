@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#09060f" />
+    <meta name="description" content="國王遊戲：手機開局的線上派對。秘密抽牌，國王對號碼下令，再揭曉是誰。" />
+    <title>國王遊戲</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true">
+      <span class="orb orb-pink"></span>
+      <span class="orb orb-blue"></span>
+      <span class="orb orb-amber"></span>
+    </div>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 64 48"><path fill="currentColor" d="M6 40 12 16l12 12L32 6l8 22 12-12 6 24H6Z"/><path fill="currentColor" d="M8 40h48v5a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3v-5Z"/></svg>
+          </span>
+          <span class="brand-name">國王遊戲</span>
+        </div>
+        <div class="top-actions">
+          <span id="round-pill" class="pill" hidden></span>
+          <button type="button" id="sound-btn" class="icon-btn" data-action="toggle-sound" aria-pressed="true" aria-label="音效"></button>
+          <button type="button" id="leave-btn" class="text-btn" data-action="leave" hidden>離開</button>
+        </div>
+      </header>
+      <div id="net-banner" class="net-banner" hidden>正在重新連線…</div>
+      <main id="view">
+        <section class="screen boot">
+          <p class="eyebrow">手機開局</p>
+          <h1>正在連上牌桌…</h1>
+        </section>
+      </main>
+    </div>
+    <div id="live" class="sr-only" aria-live="polite"></div>
+    <div id="toast-root"></div>
+    <div id="modal-root" hidden></div>
+    <noscript><p class="noscript">請開啟 JavaScript，國王遊戲才玩得動。</p></noscript>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/commands.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/solo.js"></script>
+    <script src="/js/online.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>
