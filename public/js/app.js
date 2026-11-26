@@ -81,6 +81,8 @@
     let showLeave = false;
     if (app.mode === "online" && Online.state?.round) round = Online.state.round;
     if (app.mode === "solo" && Solo.model?.round) round = Solo.model.round;
+    if (app.mode === "editor" && app.editorFrom === "online" && Online.state?.round) round = Online.state.round;
+    if (app.mode === "editor" && app.editorFrom === "solo" && Solo.model?.round) round = Solo.model.round;
     if (app.mode === "online" || app.mode === "solo") showLeave = true;
     pill.hidden = !(round > 0);
     pill.textContent = round > 0 ? `第 ${round} 回合` : "";
@@ -93,7 +95,64 @@
     $("net-banner").hidden = !(app.mode === "online" && Online.reconnecting);
   }
 
+  function adultOk() {
+    return localStorage.getItem("kings-game-adult-ok") === "yes";
+  }
+
+  function ageGateHtml() {
+    return `<section class="screen age-gate" data-testid="age-gate">
+      <p class="eyebrow">18+</p>
+      <h1>成人局</h1>
+      <p class="lede">這是給滿 18 歲、彼此同意的派對。懲罰裡有曖昧、肢體靠近、親暱，以及可以選擇的喝酒。</p>
+      <p class="fine">任何人都可以跳過，也可以喝酒代替。不願意被碰或被親，直接說就好。</p>
+      <div class="stack">
+        <button type="button" class="btn btn-primary" data-action="age-yes" data-testid="age-yes">我已滿 18 歲</button>
+        <button type="button" class="btn btn-ghost" data-action="age-no">未滿 18 歲</button>
+      </div>
+    </section>`;
+  }
+
+  function underageHtml() {
+    return `<section class="screen age-gate">
+      <p class="eyebrow">18+</p>
+      <h1>這款只給成人</h1>
+      <p class="lede">未滿 18 歲請不要玩。等你成年，再回來當國王。</p>
+    </section>`;
+  }
+
+  function editorHtml() {
+    const blocks = (app.editDeck?.levels || []).map((level, index) => `
+      <section class="glass editor-level">
+        <label class="field"><span class="field-label">Lv${index + 6} 名稱</span>
+          <input data-field="level-name" data-level="${level.id}" maxlength="8" value="${KG.esc(level.name)}" />
+        </label>
+        <div class="editor-list">${level.entries.map((entry) => `
+          <div class="entry-row">
+            <input data-field="entry-text" data-level="${level.id}" data-id="${KG.esc(entry.id)}" maxlength="80" value="${KG.esc(entry.template)}" />
+            <button type="button" class="text-btn danger" data-action="delete-entry" data-level="${level.id}" data-id="${KG.esc(entry.id)}">刪除</button>
+          </div>`).join("")}
+        </div>
+        <label class="field"><span class="field-label">加一條，用 {a} 和 {b} 當號碼</span>
+          <input id="new-${level.id}" maxlength="80" placeholder="{a}號 對 {b}號 …" />
+        </label>
+        <button type="button" class="btn btn-ghost" data-action="add-entry" data-level="${level.id}">加入這一條</button>
+      </section>`).join("");
+    return `<section class="screen" data-testid="deck-editor">
+      <p class="eyebrow">自訂 Lv6 / Lv7</p>
+      <h1>自訂懲罰</h1>
+      <p class="lede">存在這台手機。開房時會同步給這一房的每個人，重新整理也不會消失。</p>
+      ${blocks}
+      <div class="stack">
+        <button type="button" class="btn btn-primary" data-action="save-deck" data-testid="save-deck">儲存並同步</button>
+        <button type="button" class="btn btn-ghost" data-action="reset-deck">恢復範例</button>
+        <button type="button" class="btn btn-ghost" data-action="close-editor">返回</button>
+      </div>
+    </section>`;
+  }
+
   function render() {
+    if (!adultOk()) return app.mode === "underage" ? underageHtml() : ageGateHtml();
+    if (app.mode === "editor") return editorHtml();
     if (app.mode === "online") return Online.html();
     if (app.mode === "solo") return Solo.html();
     if (app.mode === "create") return createHtml();
@@ -109,7 +168,8 @@
     return `<section class="screen" data-testid="home">
       <p class="eyebrow">手機開局 · 不用下載</p>
       <h1>誰是國王</h1>
-      <p class="lede">每人秘密抽一張牌。國王只對號碼下令，揭曉之前，沒人知道中招的是誰。</p>
+      <p class="lede">每人秘密抽一張牌。國王對號碼下成人懲罰，揭曉之前，沒人知道中招的是誰。</p>
+      <p class="fine">僅限 18 歲以上。可以跳過，也可以喝酒代替。</p>
       <div class="stack">
         <button type="button" class="btn btn-primary" data-action="go-create">開一間房</button>
         <button type="button" class="btn btn-ghost" data-action="go-join">我有房間代碼</button>
@@ -254,6 +314,31 @@
     if (action === "go-create") return showCreate();
     if (action === "go-join") return showJoin(urlRoom());
     if (action === "go-solo") return showSolo();
+    if (action === "age-yes") {
+      localStorage.setItem("kings-game-adult-ok", "yes");
+      if (app.mode === "underage") app.mode = "home";
+      paint({ resetScroll: true });
+      return;
+    }
+    if (action === "age-no") {
+      app.mode = "underage";
+      paint({ resetScroll: true });
+      return;
+    }
+    if (action === "open-editor") return openEditor();
+    if (action === "close-editor") return closeEditor();
+    if (action === "save-deck") return saveDeck();
+    if (action === "reset-deck") {
+      app.editDeck = DeckCore.defaultCustomDeck();
+      paint();
+      return;
+    }
+    if (action === "add-entry") return addDeckEntry(el.dataset.level);
+    if (action === "delete-entry") {
+      app.editDeck = DeckCore.deleteEntry(app.editDeck, el.dataset.level, el.dataset.id);
+      paint();
+      return;
+    }
     if (action === "rules") return KG.rules();
     if (action === "toggle-sound") {
       app.soundOn = !app.soundOn;
@@ -488,6 +573,18 @@
     }
     if (target?.dataset.field === "solo-name") {
       Solo.setName(Number(target.dataset.index), target.value);
+      return;
+    }
+    if (!app.editDeck) return;
+    if (target?.dataset.field === "level-name") {
+      const level = app.editDeck.levels.find((item) => item.id === target.dataset.level);
+      if (level) level.name = target.value;
+      return;
+    }
+    if (target?.dataset.field === "entry-text") {
+      const level = app.editDeck.levels.find((item) => item.id === target.dataset.level);
+      const entry = level?.entries.find((item) => item.id === target.dataset.id);
+      if (entry) entry.template = target.value;
     }
   });
 
@@ -562,6 +659,68 @@
     }
   });
 
+  function activeCustomDeck() {
+    if (app.mode === "online" || (app.mode === "editor" && app.editorFrom === "online")) {
+      return Online.state?.customDeck || DeckStore.load();
+    }
+    return DeckStore.load();
+  }
+
+  function openEditor() {
+    const hostOnline = app.mode === "online" && Online.state?.you?.isHost;
+    if (app.mode !== "solo" && !hostOnline) return;
+    app.editorFrom = app.mode;
+    app.editDeck = DeckCore.normalizeCustomDeck(DeckStore.load());
+    app.mode = "editor";
+    paint({ resetScroll: true });
+  }
+
+  function closeEditor() {
+    const from = app.editorFrom;
+    app.editDeck = null;
+    if (from === "online") {
+      app.mode = "online";
+      paint({ resetScroll: true });
+      return;
+    }
+    if (from === "solo") {
+      app.mode = "solo";
+      paint({ resetScroll: true });
+      return;
+    }
+    showHome({ resetScroll: true });
+  }
+
+  function addDeckEntry(levelId) {
+    const input = document.getElementById(`new-${levelId}`);
+    try {
+      app.editDeck = DeckCore.addEntry(app.editDeck, levelId, input?.value || "");
+      paint();
+    } catch (err) {
+      KG.toast(err.message || "沒加上去");
+    }
+  }
+
+  async function saveDeck() {
+    let clean;
+    try {
+      clean = DeckCore.normalizeCustomDeck(app.editDeck);
+    } catch (err) {
+      KG.toast(err.message || "這組懲罰存不了");
+      return;
+    }
+    DeckStore.save(clean);
+    app.editDeck = clean;
+    if (app.editorFrom === "online" && Online.state?.you?.isHost) {
+      const res = await Online.emit("deck:update", clean);
+      KG.toast(res?.ok ? "已同步給這一房" : (res?.error || "沒同步成功"));
+      if (res?.ok) Online.deckSyncKey = DeckCore.canonicalDeck(clean);
+      return;
+    }
+    KG.toast("已存在這台手機");
+  }
+
+  Deck.getCustom = activeCustomDeck;
   window.App = { showHome, enterOnline, roomLink, blip };
   updateChrome();
 })();

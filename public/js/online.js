@@ -63,7 +63,27 @@
       }
       this.sound(prev, state);
       this.announce(prev, state);
+      this.maybeSyncDeck(state);
       window.App.enterOnline(screenChanged);
+    },
+
+    maybeSyncDeck(state) {
+      if (!state.you?.isHost || !window.DeckCore || !window.DeckStore) return;
+      const local = DeckStore.load();
+      const localKey = DeckCore.canonicalDeck(local);
+      const roomKey = DeckCore.canonicalDeck(state.customDeck);
+      if (localKey === roomKey) {
+        this.deckSyncKey = localKey;
+        return;
+      }
+      if (this.deckSyncKey === `${localKey}:sent`) return;
+      this.deckSyncKey = `${localKey}:sent`;
+      this.emit("deck:update", local).then((res) => {
+        if (!res?.ok) {
+          this.deckSyncKey = "";
+          KG.toast(res?.error || "自訂懲罰沒同步");
+        }
+      });
     },
 
     sound(prev, state) {
@@ -137,6 +157,7 @@
         <div class="progress-dots" aria-hidden="true">${dots}</div>
         <p class="fine" style="text-align:center">線上 ${state.connectedCount} 人${lack ? `，還差 ${lack} 人` : "，可以開始了"} · 最多 ${state.maxPlayers} 人</p>
         ${KG.roster(state.players, { hostControls: state.you?.isHost })}
+        ${state.you?.isHost ? `<button type="button" class="btn btn-ghost" data-action="open-editor" data-testid="open-editor">編輯自訂懲罰</button>` : ""}
         <div class="dock">
           ${state.you?.isHost
             ? `<button type="button" class="btn btn-primary" data-action="start" data-testid="start-game" ${ready ? "" : "disabled"}>開始遊戲</button>
@@ -158,7 +179,7 @@
         return `<section class="screen" data-testid="king-view">
           <p class="secret-note">第 ${state.round} 回合 · 只有你知道自己是國王</p>
           ${KG.cardHtml(state.you.card, { compact: true })}
-          ${KG.composerHtml(this.draft, state.numberMax)}
+          ${KG.composerHtml(this.draft, state.numberMax, { canEdit: Boolean(state.you?.isHost) })}
           <div class="dock">
             <button type="button" class="btn btn-primary" data-action="publish" data-testid="publish-command">公布這條命令</button>
             ${state.kingOnline === false ? `<button type="button" class="btn btn-ghost" data-action="redeal">國王離線了，重新發牌</button><p>如果只是對方在重新整理，先等幾秒。</p>` : ""}
@@ -196,6 +217,7 @@
       return `<section class="screen" data-testid="announced-view">
         <p class="eyebrow">第 ${state.round} 回合</p>
         ${KG.commandBanner(state.command)}
+        <p class="fine consent-note">任何人都可以跳過，也可以喝酒代替。</p>
         <p class="hint-private">${KG.esc(this.privateHint(state))}</p>
         ${chip}
         <div class="dock">
@@ -211,7 +233,7 @@
         <p class="eyebrow">第 ${state.round} 回合 · 揭曉</p>
         ${KG.commandBanner(state.command)}
         ${KG.revealBoard(state.players)}
-        <p class="fine">不想做就直接說。沒有懲罰，下一輪換一條就好。</p>
+        <p class="fine consent-note">不想做就直接說。可以跳過，也可以喝酒代替。</p>
         <div class="dock">
           ${state.you?.isHost
             ? `<button type="button" class="btn btn-primary" data-action="next" data-testid="next-round">下一回合</button>`

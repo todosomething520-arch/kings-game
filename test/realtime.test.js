@@ -88,6 +88,15 @@ test("three clients play a full round and can reconnect", async () => {
       assert.equal(joined.ok, true);
     }
     await waitFor(host, (state) => state.connectedCount === 3);
+    const custom = {
+      levels: [
+        { id: "lv6", name: "今晚加辣", entries: [{ id: "x1", template: "{a}號 對 {b}號 說一句只准今晚說的話" }] },
+        { id: "lv7", name: "自訂二", entries: [{ id: "y1", template: "{a}號 和 {b}號 乾杯" }] },
+      ],
+    };
+    assert.equal((await emit(rain, "deck:update", custom)).ok, false);
+    assert.equal((await emit(host, "deck:update", custom)).ok, true);
+    await waitFor(bean, (state) => state.customDeck?.levels?.[0]?.name === "今晚加辣");
 
     const tooSoon = await emit(bean, "game:start", {});
     assert.equal(tooSoon.ok, false);

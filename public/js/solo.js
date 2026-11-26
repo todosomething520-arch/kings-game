@@ -107,6 +107,7 @@
         </div>
         ${names.length < 12 ? `<button type="button" class="btn btn-ghost" data-action="solo-add">再加一個人</button>` : ""}
         <p class="fine">3 到 12 人。空白的名字會自動變成「玩家 1」這樣的稱呼。</p>
+        <button type="button" class="btn btn-ghost" data-action="open-editor" data-testid="open-editor">編輯自訂懲罰</button>
         <div class="dock">
           <button type="button" class="btn btn-primary" data-action="solo-start" data-testid="solo-start">開始發牌</button>
           <button type="button" class="text-btn" data-action="rules">怎麼玩</button>
@@ -158,7 +159,7 @@
         <p class="eyebrow">第 ${this.model.round} 回合</p>
         <h1>國王下令</h1>
         <p class="fine">只點號碼，不要點人名。旁邊的人請稍微離遠一點。</p>
-        ${KG.composerHtml(this.model.draft, numberMax)}
+        ${KG.composerHtml(this.model.draft, numberMax, { canEdit: true })}
         <div class="dock">
           <button type="button" class="btn btn-primary" data-action="publish" data-testid="publish-command">公布這條命令</button>
         </div>
@@ -191,7 +192,7 @@
         <p class="eyebrow">第 ${this.model.round} 回合</p>
         ${KG.commandBanner(this.model.command)}
         ${KG.revealBoard(players)}
-        <p class="fine">不想做就說一聲，下一輪換一條就好。</p>
+        <p class="fine consent-note">不想做就直接說。可以跳過，也可以喝酒代替。</p>
         <div class="dock">
           <button type="button" class="btn btn-primary" data-action="solo-again">再來一回合</button>
           <button type="button" class="btn btn-ghost" data-action="solo-setup">改名單</button>

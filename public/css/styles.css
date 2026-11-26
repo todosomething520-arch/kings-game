@@ -327,9 +327,42 @@ input::placeholder, textarea::placeholder { color: #b9a6c8; }
 .num-chip.is-on, .slot { color: #2a0814; background: linear-gradient(135deg, var(--amber), #fff1c2); border-color: transparent; }
 .count-row { display: flex; justify-content: flex-end; color: var(--faint); font-size: 0.8rem; }
 
-.command-banner.intensity-chill { box-shadow: 0 0 0 1px rgba(62, 224, 255, 0.35), var(--shadow); }
-.command-banner.intensity-normal { box-shadow: 0 0 0 1px rgba(255, 193, 77, 0.35), var(--shadow); }
-.command-banner.intensity-bold { box-shadow: 0 0 0 1px rgba(255, 77, 141, 0.45), var(--shadow); }
+.level-picker {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.level-btn {
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.04);
+  min-height: 52px;
+  padding: 6px 4px;
+  text-align: center;
+}
+.level-btn b { display: block; font-size: 0.68rem; color: var(--faint); font-weight: 700; }
+.level-btn span { display: block; font-size: 0.78rem; font-weight: 900; line-height: 1.2; }
+.level-btn.is-on {
+  color: #2a0814;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--pink), var(--amber));
+}
+.level-btn.is-on b { color: rgba(42, 8, 20, 0.72); }
+.heat-1.is-on { background: linear-gradient(135deg, #7ef0ff, #b8f3ff); }
+.heat-2.is-on { background: linear-gradient(135deg, #ffb3d4, #ffd0e6); }
+.heat-3.is-on { background: linear-gradient(135deg, #ffc14d, #ffe1a3); }
+.heat-4.is-on { background: linear-gradient(135deg, #ff4d8d, #ffb085); }
+.heat-5.is-on { background: linear-gradient(135deg, #ff2d55, #ff7a3c); color: white; }
+.heat-5.is-on b { color: rgba(255, 255, 255, 0.8); }
+.heat-6.is-on, .heat-7.is-on { background: linear-gradient(135deg, #c9a6ff, #7aa2ff); }
+.command-banner.heat-1 { box-shadow: 0 0 0 1px rgba(62, 224, 255, 0.4), var(--shadow); }
+.command-banner.heat-2, .command-banner.heat-3 { box-shadow: 0 0 0 1px rgba(255, 193, 77, 0.4), var(--shadow); }
+.command-banner.heat-4, .command-banner.heat-5 { box-shadow: 0 0 0 1px rgba(255, 77, 141, 0.5), var(--shadow); }
+.consent-note { color: var(--amber); }
+.editor-level { display: flex; flex-direction: column; gap: 10px; }
+.editor-list { display: flex; flex-direction: column; gap: 8px; }
+.entry-row input { flex: 1; min-width: 0; }
+.age-gate { min-height: 70dvh; justify-content: center; }
 .banner-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .banner-kicker { color: var(--faint); font-size: 0.82rem; font-weight: 700; }
 .hint-private {

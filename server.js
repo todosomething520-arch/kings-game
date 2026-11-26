@@ -1,4 +1,5 @@
 import express from "express";
+import fs from "node:fs";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -43,6 +44,12 @@ export function createServerApp() {
       console.error(err);
       res.status(500).type("text/plain").send("QR 沒做成");
     }
+  });
+
+  app.get("/js/deck-core.js", (_req, res) => {
+    const source = fs.readFileSync(path.join(__dirname, "lib", "deck.js"), "utf8").replace(/^export /gm, "");
+    res.set("Cache-Control", "no-cache");
+    res.type("application/javascript").send(`(() => {\n${source}\nwindow.DeckCore = {\n  LEVELS, BUILTIN, defaultCustomDeck, normalizeCustomDeck, canonicalDeck,\n  addEntry, updateEntry, deleteEntry, renameLevel, commandsFor, slotsOf,\n  fillTemplate, rollNumbers, labelFor, levelMeta\n};\n})();\n`);
   });
 
   const publicDir = path.join(__dirname, "public");
@@ -217,6 +224,7 @@ export function createServerApp() {
     socket.on("game:reveal", (_payload = {}, ack) => hostAction("reveal", undefined, ack));
     socket.on("game:next", (_payload = {}, ack) => hostAction("nextRound", undefined, ack));
     socket.on("game:redeal", (_payload = {}, ack) => hostAction("redeal", undefined, ack));
+    socket.on("deck:update", (payload = {}, ack) => hostAction("setCustomDeck", payload, ack));
 
     socket.on("disconnect", () => {
       if (socket.data.replaced) return;
