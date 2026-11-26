@@ -38,6 +38,15 @@ test("builtin levels run from mild to extreme and each has a full pool", () => {
     }
   }
   assert.equal(BUILTIN.length, 110);
+  const joined = (id) => commandsFor(id).map((command) => command.template).join("\n");
+  assert.match(joined("lv3"), /脖子/);
+  assert.match(joined("lv3"), /慢舞/);
+  assert.match(joined("lv4"), /接吻/);
+  assert.match(joined("lv4"), /冰塊/);
+  assert.match(joined("lv4"), /蒙上眼|蒙眼/);
+  assert.match(joined("lv5"), /內衣褲/);
+  assert.match(joined("lv5"), /小腹/);
+  assert.match(joined("lv5"), /一分鐘/);
 });
 
 test("custom levels can be renamed, edited, and still target numbers", () => {
