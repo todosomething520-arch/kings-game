@@ -44,6 +44,11 @@ test("builtin levels run from mild to extreme and each has a full pool", () => {
   assert.match(joined("lv4"), /接吻/);
   assert.match(joined("lv4"), /冰塊/);
   assert.match(joined("lv4"), /蒙上眼|蒙眼/);
+  assert.match(joined("lv4"), /衣服裡/);
+  assert.match(joined("lv4"), /對方說停就停/);
+  assert.match(joined("lv5"), /衣服裡/);
+  assert.match(joined("lv5"), /對方說停就停/);
+  assert.doesNotMatch(joined("lv4") + joined("lv5"), /胸口|胸部|胸前/);
   assert.match(joined("lv5"), /內衣褲/);
   assert.match(joined("lv5"), /小腹/);
   assert.match(joined("lv5"), /一分鐘/);
